@@ -1,11 +1,19 @@
-from Layer import Layer
 import numpy as np
 
 
 class DenseLayer:
-    def __init__(self, layer_dimension, previous_layer_dimension, activation):
-        self.W_matrix = np.random.randn(previous_layer_dimension, layer_dimension) * 0.01  # weight matrix
-        self.b_vector = np.zeros((previous_layer_dimension, 1))  # bias vector
+    def __init__(self, input_layer_dimension, output_layer_dimension, activation, mean=None, std=None):
+        # Dense layer
+        # The default initialization is Xavier initialization.
+        # When mean and standard deviation (std) are not set, std take the value of square root of inverse number
+        # of the previous layer dimension. This initialization prevents the vanishing gradients and exploding gradients.
+        if std is None:
+            std = np.sqrt(1 / input_layer_dimension)
+        if mean is None:
+            mean = 0
+        self.name = "Dense"
+        self.W_matrix = np.random.normal(mean, std, (output_layer_dimension, input_layer_dimension))  # weight matrix
+        self.b_vector = np.zeros((output_layer_dimension, 1))  # bias vector
 
         self.dvW_matrix = None  # gradient for weights matrix
         self.dvb_vector = None  # gradient for biases vector
@@ -39,3 +47,6 @@ class DenseLayer:
     def update_weights(self, learning_rate):
         self.W_matrix = self.W_matrix - learning_rate * self.dvW_matrix
         self.b_vector = self.b_vector - learning_rate * self.dvb_vector
+
+    def get_weights(self):
+        return self.W_matrix
