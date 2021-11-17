@@ -9,5 +9,5 @@ Currently provides following layers:
   - Dropout Layer
 
 ## Data
-Provided sample data is borrowed from one of Andrew Ng courses:
+Provided sample data is borrowed from one of the Andrew Ng courses:
 https://www.coursera.org/learn/machine-learning#about
