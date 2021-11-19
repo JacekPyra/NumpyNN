@@ -4,6 +4,7 @@ import numpy as np
 class Dropout:
     def __init__(self, threshold):
         self.name = "Dropout"
+        self.trainable = False
         self.threshold = threshold
         self.dropout = None
         self.prev_activation = None

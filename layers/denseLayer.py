@@ -12,6 +12,7 @@ class DenseLayer:
         if mean is None:
             mean = 0
         self.name = "Dense"
+        self.trainable = True
         self.W_matrix = np.random.normal(mean, std, (output_layer_dimension, input_layer_dimension))  # weight matrix
         self.b_vector = np.zeros((output_layer_dimension, 1))  # bias vector
 

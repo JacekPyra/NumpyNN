@@ -4,6 +4,8 @@ import numpy as np
 import sklearn as skl
 import os
 from scipy.io import loadmat
+from mlxtend.data import loadlocal_mnist
+import platform
 
 size = 64
 
@@ -89,4 +91,24 @@ def parse_400():
     Y = np.eye(10)[Y]
 
     print(Y.shape)
+    return X, Y, y
+
+def parse_784():
+    if not platform.system() == 'Windows':
+        X, y = loadlocal_mnist(
+            images_path='C:/Users/jacpy/PycharmProjects/NumpyNN/mnist/t10k-images-idx3-ubyte',
+            labels_path='C:/Users/jacpy/PycharmProjects/NumpyNN/mnist/train-labels-idx1-ubyte')
+
+    else:
+        X, y = loadlocal_mnist(
+            images_path='C:/Users/jacpy/PycharmProjects/NumpyNN/mnist/train-images.idx3-ubyte',
+            labels_path='C:/Users/jacpy/PycharmProjects/NumpyNN/mnist/train-labels.idx1-ubyte')
+    X, y = skl.utils.shuffle(X, y)
+
+    print("X: ", X.shape)
+    X = X / 255
+
+    Y = y.reshape(-1)
+    Y = np.eye(10)[Y]
+    print("Y: ", Y.shape)
     return X, Y, y

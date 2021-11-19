@@ -2,7 +2,7 @@ import costFunctions
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
-
+import math
 
 class Model:
     def __init__(self, cost_function):
@@ -17,17 +17,21 @@ class Model:
     def forward_propagation(self, X, training=False):
         prev_activation = X
         for layer in self.layers_list:
-            if layer.name == "Dropout" and not training:
+            # layer.trainable refers to a single layer like Dropout which are not meant to be trained.
+            # training refers to training operation (ADAM, RMSprop, etc).
+            # if training = False then all untrainable layers (layer.trainable = False)
+            # will not affect feedforwarding the data. All the data will depend on the parameters of the network.
+            if not layer.trainable and not training:
                 continue
             layer.linear_step(prev_activation)
             prev_activation = layer.activation_step()
         self.last_activation = prev_activation
 
     def backward_propagation(self, Y):
-        last_activation = costFunctions.CrossEntropy.derivative(self.last_activation, Y)
+        delta = self.cost_function.derivative(self.last_activation, Y)
         for layer in reversed(self.layers_list):
-            layer.backward_step(last_activation, Y.shape[1])
-            last_activation = layer.backward_activation()
+            layer.backward_step(delta, Y.shape[1])
+            delta = layer.backward_activation()
 
     def update_weights(self, learning_rate):
         for layer in self.layers_list:
@@ -36,6 +40,34 @@ class Model:
     def calculate_cost(self, Y):
         return self.cost_function.calculate_cost(self.last_activation, Y)
 
+    def Adam(self):
+        pass
+    def RMSprop(self):
+        pass
+
+    def mini_batch(self, X, Y, batch_size):
+        m = Y.shape[1]  # number of training examples
+        mini_batches = []
+
+        permutation = list(np.random.permutation(m))
+        shuffled_X = X[:, permutation]
+        shuffled_Y = Y[:, permutation]
+        inc = batch_size
+        num_complete_minibatches = math.floor(m / batch_size) # number of mini batches of size mini_batch_size in your partitionning
+
+        for k in range(0, num_complete_minibatches):
+            mini_batch_X = shuffled_X[:, k * inc:(k + 1) * inc]
+            mini_batch_Y = shuffled_Y[:, k * inc:(k + 1) * inc]
+            mini_batch = (mini_batch_X, mini_batch_Y)
+            mini_batches.append(mini_batch)
+
+        # For handling the end case (last mini-batch < mini_batch_size i.e less than 64)
+        if m % batch_size != 0:
+            mini_batch_X = shuffled_X[:, num_complete_minibatches * inc:]
+            mini_batch_Y = shuffled_Y[:, num_complete_minibatches * inc:]
+            mini_batch = (mini_batch_X, mini_batch_Y)
+            mini_batches.append(mini_batch)
+        return mini_batches
 
     def train(self, learning_rate, iterations_count, X_train, Y_train, X_test, Y_test):
         percentage = iterations_count / 100
@@ -57,6 +89,7 @@ class Model:
                     print(" Increasing. ↑ | ", end="")
                 else:
                     print(" Decreasing. ↓ | ", end="")
+                previous_validation_loss = current_validation_loss
 
         print("")
         print(self.cost[::100])
